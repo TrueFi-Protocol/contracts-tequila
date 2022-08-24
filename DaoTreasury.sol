@@ -8,6 +8,8 @@ import {Upgradeable} from "./helium/access/Upgradeable.sol";
 contract DaoTreasury is Upgradeable {
     using SafeERC20 for IERC20;
 
+    event TransferredEth(address to, uint256 amount);
+
     bytes32 public constant MANAGER_ROLE = keccak256("MANAGER_ROLE");
 
     function initialize(address pauser) external initializer {
@@ -22,6 +24,12 @@ contract DaoTreasury is Upgradeable {
         token.safeTransfer(to, amount);
     }
 
+    function transferEth(address payable to, uint256 amount) public onlyRole(MANAGER_ROLE) whenNotPaused {
+        to.transfer(amount);
+
+        emit TransferredEth(to, amount);
+    }
+
     function approve(
         IERC20 token,
         address spender,
@@ -29,4 +37,6 @@ contract DaoTreasury is Upgradeable {
     ) public onlyRole(MANAGER_ROLE) whenNotPaused {
         token.approve(spender, amount);
     }
+
+    receive() external payable {}
 }
